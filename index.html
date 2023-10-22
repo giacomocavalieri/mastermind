@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mastermind</title>
+
+    <script type="module">
+      import { main } from "./build/dev/javascript/mastermind/app.mjs";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        main();
+      });
+    </script>
+    <style>
+        * {
+            color: black;
+            font-family: sans-serif;
+        }
+
+        body {
+            background-color: white;
+        }
+
+        .pegs {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .peg {
+            text-align: center;
+            padding: 0.5rem;
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            margin: 0.5rem;
+            background-color: transparent;
+            border-radius: 100%;
+        }
+
+        .peg-picker {
+            margin: 0;
+            padding: 0;
+        }
+
+        .peg-picker .peg:hover,
+        .guess-row .peg:hover {
+            cursor: pointer;
+        }
+
+        .peg-empty {
+            border: dashed 1px black;
+        }
+
+        .peg-red {
+            background-color: lightcoral;
+            color: black;
+        }
+
+        .peg-yellow {
+            background-color: lightgoldenrodyellow;
+            color: black;
+        }
+
+        .peg-green {
+            background-color: lightgreen;
+            color: black;
+        }
+
+        .peg-blue {
+            background-color: lightskyblue;
+            color: black;
+        }
+
+        .peg-orange {
+            background-color: orange;
+            color: black
+        }
+
+        .peg-purple {
+            background-color: plum;
+            color: black;
+        }
+
+        button {
+            border: none;
+            border-radius: 1rem;
+            padding: 0.5rem;
+            background-color: greenyellow;
+            color: green;
+        }
+
+        button:hover:not(:disabled) {
+            cursor: pointer;
+        }
+ 
+        button:disabled {
+            background-color: whitesmoke;
+            color: darkgrey;
+            cursor: not-allowed;
+        }
+
+        .slightly-faded {
+            opacity: 70%;
+        }
+
+        .v-stack {
+            list-style: none;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .v-stack .v-elem {
+            margin-top: 0.5rem;
+        }
+
+    </style>
+  </head>
+
+  <body>
+    <div data-lustre-app></div>
+  </body>
+</html>
