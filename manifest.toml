@@ -7,6 +7,7 @@ packages = [
   { name = "gleeunit", version = "0.11.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "1397E5C4AC4108769EE979939AC39BF7870659C5AFB714630DEEEE16B8272AD5" },
   { name = "lustre", version = "3.0.8", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "lustre", source = "hex", outer_checksum = "915B9A065EFAB48C40A2A18D0ABC4240CAE5FBFCF00519C77167A997FDC3B44B" },
   { name = "prng", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_bitwise", "gleam_stdlib"], otp_app = "prng", source = "hex", outer_checksum = "BF5E5197188CDE7C86855BA2CC2C3E855D676D6336310AFFB5BE33A393372AF6" },
+  { name = "tote", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "tote", source = "hex", outer_checksum = "6AC96A9AB3DB7322B8845D37A3F675A8378623E7A95A3A8E70C32C1DC0F0019A" },
 ]
 
 [requirements]
@@ -14,3 +15,4 @@ gleam_stdlib = { version = "~> 0.31" }
 gleeunit = { version = "~> 0.10" }
 lustre = { version = "~> 3.0" }
 prng = { version = "~> 1.0" }
+tote = { version = "~> 1.0" }

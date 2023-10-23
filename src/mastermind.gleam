@@ -1,7 +1,7 @@
 import gleam/list
 import gleam/bool.{guard}
 import prng/random
-import bag
+import tote/bag
 
 // GAME TYPES ------------------------------------------------------------------
 

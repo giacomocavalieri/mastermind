@@ -1,10 +1,10 @@
 import gleam/list
 import gleeunit
+import tote/bag
 import mastermind.{
   Blue, Continue, CorrectColor, CorrectPosition, Game, Green, Guess,
   GuessOutcome, Hint, Lose, NoMoreGuesses, Red, SecretCode, Win, Yellow,
 }
-import bag
 
 pub fn main() {
   gleeunit.main()
