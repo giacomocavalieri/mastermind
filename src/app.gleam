@@ -1,15 +1,15 @@
 import gleam/int
 import gleam/list
 import gleam/io
-import gleam/option.{None, Option, Some}
+import gleam/option.{type Option, None, Some}
 import lustre
 import lustre/attribute.{class, classes, disabled}
 import lustre/event.{on_click}
-import lustre/element.{Element, text}
+import lustre/element.{type Element, text}
 import lustre/element/html.{button, div, li, ul}
 import mastermind.{
-  Blue, Continue, Game, Green, Guess, GuessOutcome, Hint, Lose, NoMoreGuesses,
-  Orange, Peg, Purple, Red, Win, Yellow,
+  type Game, type Guess, type GuessOutcome, type Hint, type Peg, Blue, Continue,
+  Green, Guess, Lose, NoMoreGuesses, Orange, Purple, Red, Win, Yellow,
 }
 
 // APPLICATION ENTRY POINT -----------------------------------------------------

@@ -2,8 +2,9 @@ import gleam/list
 import gleeunit
 import tote/bag
 import mastermind.{
-  Blue, Continue, CorrectColor, CorrectPosition, Game, Green, Guess,
-  GuessOutcome, Hint, Lose, NoMoreGuesses, Red, SecretCode, Win, Yellow,
+  type Game, type Guess, type GuessOutcome, type Hint, Blue, Continue,
+  CorrectColor, CorrectPosition, Green, Guess, Lose, NoMoreGuesses, Red,
+  SecretCode, Win, Yellow,
 }
 
 pub fn main() {
