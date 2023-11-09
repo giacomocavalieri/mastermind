@@ -226,6 +226,7 @@ fn view_peg(
     [
       class(peg_to_color_class(peg_value)),
       class("peg"),
+      classes([#("focused-peg", peg_focus == Focused)]),
       on_click(click_message),
     ],
     [text(peg_to_letter(peg_value))],
