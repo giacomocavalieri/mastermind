@@ -10,7 +10,8 @@ import lustre/element.{type Element, text}
 import lustre/element/html.{button, div, li, ul}
 import mastermind.{
   type Game, type Guess, type GuessOutcome, type Hint, type Peg, Blue, Continue,
-  Green, Guess, Lose, NoMoreGuesses, Orange, Purple, Red, Win, Yellow,
+  CorrectColor, CorrectPosition, Green, Guess, Lose, NoMoreGuesses, Orange,
+  Purple, Red, Win, Yellow,
 }
 
 // APPLICATION ENTRY POINT -----------------------------------------------------
@@ -224,12 +225,41 @@ fn view_guess(guess: #(Guess, List(Hint))) -> Element(nothing) {
   let pegs =
     [guess.one, guess.two, guess.three, guess.four]
     |> list.map(fn(peg) {
-      li(
-        [class(peg_to_color_class(Some(peg))), class("peg"), class("v-elem")],
-        [text(peg_to_letter(Some(peg)))],
+      div(
+        [],
+        [
+          li(
+            [
+              class(peg_to_color_class(Some(peg))),
+              class("peg"),
+              class("v-elem"),
+            ],
+            [text(peg_to_letter(Some(peg)))],
+          ),
+        ],
       )
     })
-  li([], [ul([class("pegs"), class("old-guesses"), class("v-stack")], pegs)])
+  li(
+    [],
+    [
+      ul([class("pegs"), class("old-guesses"), class("v-stack")], pegs),
+      view_hints(hints),
+    ],
+  )
+}
+
+fn view_hints(hints: List(Hint)) -> Element(nothing) {
+  let hints =
+    list.map(
+      hints,
+      fn(hint) {
+        case hint {
+          CorrectColor -> li([class("color-hint")], [text("c")])
+          CorrectPosition -> li([class("color-position")], [text("p")])
+        }
+      },
+    )
+  ul([class("hints")], hints)
 }
 
 /// View that displays the row containing the pegs that can be used to make
