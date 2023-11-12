@@ -17,6 +17,7 @@ gleam_stdlib = "~> 0.31"
 lustre = "~> 3.0"
 prng = "~> 1.0"
 tote = "~> 1.0"
+lustre_ui = "~> 0.1"
 
 [dev-dependencies]
 gleeunit = "~> 0.10"
