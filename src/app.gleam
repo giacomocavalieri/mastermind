@@ -248,7 +248,7 @@ fn view_guess(guess: #(Guess, List(Hint))) -> Element(nothing) {
 
   let hints = cluster([], list.map(hints, guess_hint))
 
-  cluster([cluster.loose()], [pegs, hints])
+  cluster([cluster.space("3rem")], [pegs, hints])
 }
 
 fn old_guessed_peg(peg: Peg) {

@@ -24,6 +24,27 @@ button:disabled:hover {
     cursor: pointer;
 }
 
+.correct-color,
+.correct-position {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.5em;
+    width: 1.5em;
+    border-radius: 100%;
+}
+
+.correct-color {
+    background-color: aliceblue;
+    color: blue;
+    border: solid 1px blue;
+}
+
+.correct-position {
+    background-color: red;
+    color: white;
+}
+
 .peg {
     display: flex;
     align-items: center;
