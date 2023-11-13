@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Mastermind</title>
+
+        <link rel="stylesheet" href="style.css">
+        <script type="module">
+            import { main, key_to_event } from "./build/dev/javascript/mastermind/app.mjs";
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const dispatchMessage = main();
+                document.addEventListener("keydown", (event) => {
+                    const decodedEvent = key_to_event(event.key);
+                    if (decodedEvent.isOk()) {
+                        dispatchMessage(decodedEvent[0]);
+                    }
+                })
+            });
+        </script>
+    </head>
+
+    <body>
+        <div data-lustre-app></div>
+    </body>
+
+</html>

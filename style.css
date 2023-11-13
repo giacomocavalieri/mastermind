@@ -1,0 +1,123 @@
+* {
+    font-family: monospace;
+}
+
+#game {
+    display: flex;
+    align-items: center;
+}
+
+#picker {
+    display: flex;
+    align-items: left;
+}
+
+button:disabled:hover {
+    cursor: not-allowed;
+}
+
+.choice-peg:hover {
+    cursor: pointer;
+}
+
+.correct-color,
+.correct-position {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.5em;
+    width: 1.5em;
+    border-radius: 100%;
+}
+
+.correct-color {
+    background-color: aliceblue;
+    color: blue;
+    border: solid 1px blue;
+}
+
+.correct-position {
+    background-color: red;
+    color: white;
+}
+
+.peg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 3em;
+    width: 3em;
+    border-radius: 100%;
+}
+
+.peg-red {
+    background-color: lightcoral;
+
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px lightcoral;
+        color: lightcoral;
+    }
+
+}
+
+.peg-yellow {
+    background-color: lightgoldenrodyellow;
+
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px black;
+        color: black;
+    }
+
+}
+
+.peg-green {
+    background-color: lightgreen;
+
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px lightgreen;
+        color: lightgreen;
+    }
+}
+
+.peg-blue {
+    background-color: lightskyblue;
+
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px lightskyblue;
+        color: lightskyblue;
+    }
+
+}
+
+.peg-orange {
+    background-color: orange;
+
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px orange;
+        color: orange;
+    }
+}
+
+.peg-purple {
+    background-color: plum;
+
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px plum;
+        color: plum;
+    }
+}
+
+.peg-empty {
+    border: dashed 1px black;
+
+    &.focused-peg {
+        border-color: red;
+        color: red;
+    }
+}
