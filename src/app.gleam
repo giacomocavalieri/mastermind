@@ -1,5 +1,5 @@
 import gleam/bool
-import gleam/dynamic.{DecodeError, Dynamic}
+import gleam/dynamic.{type DecodeError}
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}

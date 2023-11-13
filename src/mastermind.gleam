@@ -1,7 +1,6 @@
 import gleam/bool.{guard}
-import gleam/dynamic.{DecodeError, Dynamic}
+import gleam/dynamic.{type DecodeError, DecodeError}
 import gleam/list
-import gleam/result
 import gleam/string
 import prng/random
 import tote/bag
