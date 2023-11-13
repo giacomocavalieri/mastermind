@@ -100,6 +100,10 @@ pub fn remaining_guesses(game: Game) -> Int {
   game.max_attempts - attempted_guesses(game)
 }
 
+pub fn secret_code(game: Game) -> SecretCode {
+  game.secret_code
+}
+
 // MAKING GUESSES --------------------------------------------------------------
 
 /// The hints corresponding to a winning game.

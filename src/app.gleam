@@ -14,9 +14,9 @@ import lustre/ui/cluster.{cluster}
 import lustre/ui/stack.{stack}
 import lustre/ui/styles.{elements, theme}
 import mastermind.{
-  type Game, type Guess, type GuessOutcome, type Hint, type Peg, Blue, Continue,
-  CorrectColor, CorrectPosition, Green, Guess, Lose, NoMoreGuesses, Orange,
-  Purple, Red, Win, Yellow,
+  type Game, type Guess, type GuessOutcome, type Hint, type Peg, type SecretCode,
+  Blue, Continue, CorrectColor, CorrectPosition, Green, Guess, Lose,
+  NoMoreGuesses, Orange, Purple, Red, Win, Yellow,
 }
 import ring.{type Focus, type Ring, Focused}
 
@@ -111,19 +111,19 @@ pub fn key_to_event(value: String) -> Result(Message, List(DecodeError)) {
 // VIEW ------------------------------------------------------------------------
 
 fn view(model: Model) -> Element(Message) {
+  let main_content = case model.status {
+    Lose | Win -> stack([], [old_guesses(model)])
+    Continue -> stack([stack.space("2em")], [old_guesses(model), picker(model)])
+  }
+
   let message = case model.status {
-    Lose -> text("You lost! The solution was TODO")
+    Lose -> losing_message(model)
     Win -> text("You won!")
     Continue ->
       case mastermind.remaining_guesses(model.game) {
         1 -> text("1 remaining guess")
         n -> text(int.to_string(n) <> " remaining guesses")
       }
-  }
-
-  let main_content = case model.status {
-    Lose | Win -> stack([], [old_guesses(model)])
-    Continue -> stack([stack.space("2em")], [old_guesses(model), picker(model)])
   }
 
   let controls = case model.status {
@@ -133,8 +133,22 @@ fn view(model: Model) -> Element(Message) {
 
   stack(
     [id("game"), stack.space("3em")],
-    [elements(), theme(ui.base()), message, main_content, controls],
+    [elements(), theme(ui.base()), main_content, message, controls],
   )
+}
+
+fn losing_message(model: Model) -> Element(nothing) {
+  let solution =
+    mastermind.secret_code(model.game)
+    |> secret_code_to_list
+    |> list.map(old_guessed_peg)
+    |> cluster([], _)
+
+  stack([], [text("You lost! The solution was"), solution])
+}
+
+fn secret_code_to_list(code: SecretCode) -> List(Peg) {
+  [code.one, code.two, code.three, code.four]
 }
 
 // VIEW BUTTONS ----------------------------------------------------------------
