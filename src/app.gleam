@@ -1,17 +1,19 @@
 import gleam/bool
+import gleam/dynamic.{DecodeError, Dynamic}
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/result
 import lustre
 import lustre/attribute.{class, classes, disabled, id}
-import lustre/event.{on_click}
 import lustre/element.{type Element, text}
 import lustre/element/html.{span}
+import lustre/event.{on_click}
 import lustre/ui
 import lustre/ui/button.{button}
+import lustre/ui/cluster.{cluster}
 import lustre/ui/stack.{stack}
 import lustre/ui/styles.{elements, theme}
-import lustre/ui/cluster.{cluster}
 import mastermind.{
   type Game, type Guess, type GuessOutcome, type Hint, type Peg, Blue, Continue,
   CorrectColor, CorrectPosition, Green, Guess, Lose, NoMoreGuesses, Orange,
@@ -22,8 +24,8 @@ import mastermind.{
 
 pub fn main() {
   let app = lustre.simple(init, update, view)
-  let assert Ok(_) = lustre.start(app, "[data-lustre-app]", Nil)
-  Nil
+  let assert Ok(dispatch) = lustre.start(app, "[data-lustre-app]", Nil)
+  dispatch
 }
 
 // MODEL -----------------------------------------------------------------------
@@ -55,7 +57,7 @@ fn init(_: Nil) -> Model {
 
 // UPDATE ----------------------------------------------------------------------
 
-type Message {
+pub type Message {
   NewGame
   FocusPeg(Int)
   SetFocusedPeg(Peg)
@@ -172,6 +174,15 @@ fn guess_from_model_pegs(model: Model) -> Option(Guess) {
   }
 }
 
+// DECODE KEYDOWN MESSAGE ------------------------------------------------------
+
+pub fn key_to_event(value: String) -> Result(Message, List(DecodeError)) {
+  case value {
+    "\r" | "\n" -> Ok(MakeAGuess)
+    _ -> result.map(mastermind.parse_peg(value), SetFocusedPeg)
+  }
+}
+
 // VIEW ------------------------------------------------------------------------
 
 fn view(model: Model) -> Element(Message) {
@@ -212,9 +223,9 @@ fn new_game_button(model: Model) -> Element(Message) {
 }
 
 fn make_a_guess_button(model: Model) -> Element(Message) {
-  let attributes = case model.status {
-    Continue -> [disabled(False), button.solid(), on_click(MakeAGuess)]
-    Lose | Win -> [disabled(True)]
+  let attributes = case model.status, guess_from_model_pegs(model) {
+    Continue, Some(_) -> [disabled(False), button.solid(), on_click(MakeAGuess)]
+    _, _ -> [disabled(True)]
   }
   button(attributes, [text("Make a guess")])
 }

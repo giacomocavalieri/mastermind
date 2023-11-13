@@ -8,10 +8,17 @@
 
         <link rel="stylesheet" href="style.css">
         <script type="module">
-            import { main } from "./build/dev/javascript/mastermind/app.mjs";
+            import { main, key_to_event } from "./build/dev/javascript/mastermind/app.mjs";
 
             document.addEventListener("DOMContentLoaded", () => {
-                main();
+                const dispatchMessage = main();
+                document.addEventListener("keypress", (event) => {
+                    const key = String.fromCharCode(event.keyCode);
+                    const decodedEvent = key_to_event(key);
+                    if (decodedEvent.isOk()) {
+                        dispatchMessage(decodedEvent[0]);
+                    }
+                });
             });
         </script>
     </head>

@@ -1,5 +1,8 @@
-import gleam/list
 import gleam/bool.{guard}
+import gleam/dynamic.{DecodeError, Dynamic}
+import gleam/list
+import gleam/result
+import gleam/string
 import prng/random
 import tote/bag
 
@@ -199,4 +202,25 @@ fn elements_in_common(one: List(a), other: List(a)) -> Int {
   bag.from_list(one)
   |> bag.intersect(with: bag.from_list(other))
   |> bag.size
+}
+
+// DECODERS --------------------------------------------------------------------
+
+pub fn parse_peg(value: String) -> Result(Peg, List(DecodeError)) {
+  case string.lowercase(value) {
+    "r" -> Ok(Red)
+    "y" -> Ok(Yellow)
+    "g" -> Ok(Green)
+    "b" -> Ok(Blue)
+    "o" -> Ok(Orange)
+    "p" -> Ok(Purple)
+    other ->
+      Error([
+        DecodeError(
+          expected: "a peg letter (one of 'r', 'y', 'g', 'b', 'o' or 'p')",
+          found: other,
+          path: [],
+        ),
+      ])
+  }
 }
