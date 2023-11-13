@@ -1,0 +1,75 @@
+* {
+    font-family: monospace;
+}
+
+#game {
+    display: flex;
+    align-items: center;
+}
+
+#picker {
+    display: flex;
+    align-items: left;
+}
+
+button:disabled:hover {
+    cursor: not-allowed;
+}
+
+.choice-peg:hover {
+    cursor: pointer;
+}
+
+.chosen-peg:hover {
+    cursor: pointer;
+}
+
+.peg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 3em;
+    width: 3em;
+    border-radius: 100%;
+}
+
+.peg-red {
+    background-color: lightcoral;
+
+}
+
+.peg-yellow {
+    background-color: lightgoldenrodyellow;
+
+}
+
+.peg-green {
+    background-color: lightgreen;
+
+}
+
+.peg-blue {
+    background-color: lightskyblue;
+
+}
+
+.peg-orange {
+    background-color: orange;
+
+}
+
+.peg-purple {
+    background-color: plum;
+
+}
+
+.peg-empty {
+    border: dashed 1px black;
+}
+
+.focused-peg {
+    border: solid 1px red;
+    color: red;
+    background: transparent;
+    box-shadow: inset;
+}

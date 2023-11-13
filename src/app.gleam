@@ -4,10 +4,15 @@ import gleam/list
 import gleam/io
 import gleam/option.{type Option, None, Some}
 import lustre
-import lustre/attribute.{class, classes, disabled}
+import lustre/attribute.{class, classes, disabled, id}
 import lustre/event.{on_click}
 import lustre/element.{type Element, text}
-import lustre/element/html.{button, div, li, ul}
+import lustre/element/html.{span}
+import lustre/ui
+import lustre/ui/button.{button}
+import lustre/ui/stack.{stack}
+import lustre/ui/styles.{elements, theme}
+import lustre/ui/cluster.{cluster}
 import mastermind.{
   type Game, type Guess, type GuessOutcome, type Hint, type Peg, Blue, Continue,
   CorrectColor, CorrectPosition, Green, Guess, Lose, NoMoreGuesses, Orange,
@@ -150,144 +155,150 @@ fn focused_peg_position(model: Model) -> Option(Int) {
   }
 }
 
+/// If all pegs are set to a value, returns a `Guess` wrapped in `Ok`.
+/// Otherwise returns `Nothing`, since a guess must be made of 4 pegs.
+/// 
+fn guess_from_model_pegs(model: Model) -> Option(Guess) {
+  case model.pegs {
+    [#(Some(peg1), _), #(Some(peg2), _), #(Some(peg3), _), #(Some(peg4), _)] ->
+      Some(Guess(peg1, peg2, peg3, peg4))
+    _ -> None
+  }
+}
+
 // VIEW ------------------------------------------------------------------------
 
 fn view(model: Model) -> Element(Message) {
-  case model.status {
-    Win -> winning_view(model)
-    Lose -> losing_view(model)
-    Continue -> playing_view(model)
+  let message = case model.status {
+    Lose -> text("You lost! The solution was TODO")
+    Win -> text("You won!")
+    Continue ->
+      case mastermind.remaining_guesses(model.game) {
+        1 -> text("1 remaining guess")
+        n -> text(int.to_string(n) <> " remaining guesses")
+      }
   }
+
+  let main_content = case model.status {
+    Lose | Win -> stack([], [old_guesses(model)])
+    Continue -> stack([stack.space("2em")], [old_guesses(model), picker(model)])
+  }
+
+  let controls = case model.status {
+    Lose | Win -> stack([], [new_game_button(model)])
+    Continue -> stack([], [make_a_guess_button(model), new_game_button(model)])
+  }
+
+  stack(
+    [id("game"), stack.space("3em")],
+    [elements(), theme(ui.base()), message, main_content, controls],
+  )
 }
 
-/// View displayd when the player has lost.
-/// 
-fn losing_view(model: Model) -> Element(Message) {
-  let message = text("You lost! The solution was TODO")
-  div([], [message, guesses(model), new_game_button(model)])
-}
+// VIEW BUTTONS ----------------------------------------------------------------
 
-/// View displayed when the player has won.
-/// 
-fn winning_view(model: Model) -> Element(Message) {
-  let message = text("You won!")
-  div([], [message, guesses(model), new_game_button(model)])
-}
-
-/// Button to start a new game from scratch.
-/// 
 fn new_game_button(model: Model) -> Element(Message) {
-  let should_be_faded = model.status == Continue
-  button(
-    [on_click(NewGame), classes([#("slightly-faded", should_be_faded)])],
-    [text("Start a new game!")],
-  )
-}
-
-/// View displayed when the game is still going.
-/// 
-fn playing_view(model: Model) -> Element(Message) {
-  div(
-    [class("v-stack")],
-    [
-      remaining_guesses(model),
-      guesses(model),
-      peg_row(model),
-      ul(
-        [class("v-stack")],
-        [
-          li([class("v-elem")], [guess_button(model)]),
-          li([class("v-elem")], [new_game_button(model)]),
-        ],
-      ),
-    ],
-  )
-}
-
-fn remaining_guesses(model: Model) -> Element(nothing) {
-  case mastermind.remaining_guesses(model.game) {
-    1 -> text("1 remaining guess")
-    n -> text(int.to_string(n) <> " remaining guesses")
+  let attributes = case model.status {
+    Lose | Win -> [button.solid(), on_click(NewGame)]
+    Continue -> [button.outline(), on_click(NewGame)]
   }
+  button(attributes, [text("Start a new game")])
 }
 
-/// View that displays all the previous guesses taken by the player.
-/// 
-fn guesses(model: Model) -> Element(nothing) {
-  ul(
-    [class("guesses"), class("v-stack")],
-    list.map(list.reverse(model.game.guesses), view_guess),
-  )
+fn make_a_guess_button(model: Model) -> Element(Message) {
+  let attributes = case model.status, guess_from_model_pegs(model) {
+    Continue, Some(guess) -> [
+      disabled(False),
+      button.solid(),
+      on_click(TryGuess(guess)),
+    ]
+    _, _ -> [disabled(True)]
+  }
+  button(attributes, [text("Make a guess")])
+}
+
+// VIEW OLD GUESSES ------------------------------------------------------------
+
+fn old_guesses(model: Model) -> Element(nothing) {
+  list.reverse(model.game.guesses)
+  |> list.map(view_guess)
+  |> stack([], _)
 }
 
 fn view_guess(guess: #(Guess, List(Hint))) -> Element(nothing) {
   let #(guess, hints) = guess
+
   let pegs =
     [guess.one, guess.two, guess.three, guess.four]
-    |> list.map(fn(peg) {
-      div(
-        [],
-        [
-          li(
-            [
-              class(peg_to_color_class(Some(peg))),
-              class("peg"),
-              class("v-elem"),
-            ],
-            [text(peg_to_letter(Some(peg)))],
-          ),
-        ],
-      )
-    })
-  li(
-    [],
-    [
-      ul([class("pegs"), class("old-guesses"), class("v-stack")], pegs),
-      view_hints(hints),
-    ],
+    |> list.map(old_guessed_peg)
+    |> cluster([], _)
+
+  let hints = cluster([], list.map(hints, guess_hint))
+
+  cluster([cluster.loose()], [pegs, hints])
+}
+
+fn old_guessed_peg(peg: Peg) {
+  span(
+    [class(peg_to_color_class(Some(peg))), class("peg")],
+    [text(peg_to_letter(Some(peg)))],
   )
 }
 
-fn view_hints(hints: List(Hint)) -> Element(nothing) {
-  let hints =
-    list.map(
-      hints,
-      fn(hint) {
-        case hint {
-          CorrectColor -> li([class("color-hint")], [text("c")])
-          CorrectPosition -> li([class("color-position")], [text("p")])
-        }
-      },
-    )
-  ul([class("hints")], hints)
-}
-
-/// View that displays the row containing the pegs that can be used to make
-/// a guess.
-/// 
-/// When a peg is focused it displays a picker to choose the peg value.
-/// 
-fn peg_row(model: Model) -> Element(Message) {
-  let pegs = list.index_map(model.pegs, view_peg)
-  case focused_peg_position(model) {
-    None -> ul([class("pegs"), class("guess-row")], pegs)
-    Some(position) ->
-      ul([class("pegs")], list.append(pegs, [peg_picker(position)]))
+fn guess_hint(hint: Hint) -> Element(nothing) {
+  case hint {
+    CorrectColor -> span([class("correct-color")], [text("c")])
+    CorrectPosition -> span([class("correct-position")], [text("p")])
   }
 }
 
-fn view_peg(peg_position: Int, peg: #(Option(Peg), Focus)) -> Element(Message) {
+// VIEW PICKER -----------------------------------------------------------------
+
+fn picker(model: Model) -> Element(Message) {
+  let guess_row =
+    list.index_map(model.pegs, chosen_peg)
+    |> cluster([], _)
+
+  let content = case focused_peg_position(model) {
+    None -> [guess_row]
+    Some(position) -> [
+      guess_row,
+      [Red, Yellow, Green, Blue, Orange, Purple]
+      |> list.map(choice_peg(_, position))
+      |> cluster([], _),
+    ]
+  }
+
+  stack([id("picker")], content)
+}
+
+fn chosen_peg(position: Int, peg: #(Option(Peg), Focus)) -> Element(Message) {
   let #(peg_value, peg_focus) = peg
-  li(
+  span(
     [
-      class(peg_to_color_class(peg_value)),
       class("peg"),
+      class("chosen-peg"),
+      class(peg_to_color_class(peg_value)),
       classes([#("focused-peg", peg_focus == Focused)]),
-      on_click(FocusPeg(peg_position)),
+      on_click(FocusPeg(position)),
     ],
     [text(peg_to_letter(peg_value))],
   )
 }
+
+fn choice_peg(peg: Peg, position: Int) {
+  span(
+    [
+      class("peg"),
+      class("choice-peg"),
+      class(peg_to_color_class(Some(peg))),
+      on_click(SetPeg(position, peg)),
+    ],
+    [text(peg_to_letter(Some(peg)))],
+  )
+}
+
+// VIEW GENERIC PEG HELPERS ----------------------------------------------------
 
 fn peg_to_letter(peg: Option(Peg)) -> String {
   case peg {
@@ -310,43 +321,5 @@ fn peg_to_color_class(peg: Option(Peg)) -> String {
     Some(Blue) -> "peg-blue"
     Some(Orange) -> "peg-orange"
     Some(Purple) -> "peg-purple"
-  }
-}
-
-fn peg_picker(position: Int) -> Element(Message) {
-  let all_pegs = [Red, Yellow, Green, Blue, Orange, Purple]
-  let peg_pickers =
-    all_pegs
-    |> list.map(fn(peg) {
-      li(
-        [
-          class(peg_to_color_class(Some(peg))),
-          class("peg"),
-          on_click(SetPeg(position, peg)),
-        ],
-        [text(peg_to_letter(Some(peg)))],
-      )
-    })
-  ul([class("peg-picker")], peg_pickers)
-}
-
-/// Button to submit a new guess.
-/// 
-fn guess_button(model: Model) -> Element(Message) {
-  let attributes = case model.status, guess_from_model_pegs(model) {
-    Continue, Some(guess) -> [disabled(False), on_click(TryGuess(guess))]
-    _, _ -> [disabled(True)]
-  }
-  button(attributes, [text("Make a guess!")])
-}
-
-/// If all pegs are set to a value, returns a `Guess` wrapped in `Ok`.
-/// Otherwise returns `Nothing`, since a guess must be made of 4 pegs.
-/// 
-fn guess_from_model_pegs(model: Model) -> Option(Guess) {
-  case model.pegs {
-    [#(Some(peg1), _), #(Some(peg2), _), #(Some(peg3), _), #(Some(peg4), _)] ->
-      Some(Guess(peg1, peg2, peg3, peg4))
-    _ -> None
   }
 }
