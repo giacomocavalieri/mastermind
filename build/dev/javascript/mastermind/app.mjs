@@ -169,6 +169,10 @@ export function key_to_event(value) {
   }
 }
 
+function secret_code_to_list(code) {
+  return toList([code.one, code.two, code.three, code.four]);
+}
+
 function new_game_button(model) {
   let attributes = (() => {
     let $ = model.status;
@@ -182,7 +186,7 @@ function new_game_button(model) {
       throw makeError(
         "case_no_match",
         "app",
-        143,
+        157,
         "new_game_button",
         "No case clause matched",
         { values: [$] }
@@ -218,7 +222,7 @@ function guess_hint(hint) {
     throw makeError(
       "case_no_match",
       "app",
-      187,
+      201,
       "guess_hint",
       "No case clause matched",
       { values: [hint] }
@@ -245,7 +249,7 @@ function peg_to_letter(peg) {
     throw makeError(
       "case_no_match",
       "app",
-      239,
+      253,
       "peg_to_letter",
       "No case clause matched",
       { values: [peg] }
@@ -272,7 +276,7 @@ function peg_to_color_class(peg) {
     throw makeError(
       "case_no_match",
       "app",
-      251,
+      265,
       "peg_to_color_class",
       "No case clause matched",
       { values: [peg] }
@@ -284,6 +288,19 @@ function old_guessed_peg(peg) {
   return span(
     toList([class$(peg_to_color_class(new Some(peg))), class$("peg")]),
     toList([text(peg_to_letter(new Some(peg)))]),
+  );
+}
+
+function losing_message(model) {
+  let solution = (() => {
+    let _pipe = $mastermind.secret_code(model.game);
+    let _pipe$1 = secret_code_to_list(_pipe);
+    let _pipe$2 = $list.map(_pipe$1, old_guessed_peg);
+    return ((_capture) => { return cluster(toList([]), _capture); })(_pipe$2);
+  })();
+  return stack(
+    toList([]),
+    toList([text("You lost! The solution was"), solution]),
   );
 }
 
@@ -359,31 +376,6 @@ function picker(model) {
 }
 
 function view(model) {
-  let message = (() => {
-    let $ = model.status;
-    if ($ instanceof Lose) {
-      return text("You lost! The solution was TODO");
-    } else if ($ instanceof Win) {
-      return text("You won!");
-    } else if ($ instanceof Continue) {
-      let $1 = $mastermind.remaining_guesses(model.game);
-      if ($1 === 1) {
-        return text("1 remaining guess");
-      } else {
-        let n = $1;
-        return text($int.to_string(n) + " remaining guesses");
-      }
-    } else {
-      throw makeError(
-        "case_no_match",
-        "app",
-        114,
-        "view",
-        "No case clause matched",
-        { values: [$] }
-      )
-    }
-  })();
   let main_content = (() => {
     let $ = model.status;
     if ($ instanceof Lose) {
@@ -399,7 +391,32 @@ function view(model) {
       throw makeError(
         "case_no_match",
         "app",
-        124,
+        114,
+        "view",
+        "No case clause matched",
+        { values: [$] }
+      )
+    }
+  })();
+  let message = (() => {
+    let $ = model.status;
+    if ($ instanceof Lose) {
+      return losing_message(model);
+    } else if ($ instanceof Win) {
+      return text("You won!");
+    } else if ($ instanceof Continue) {
+      let $1 = $mastermind.remaining_guesses(model.game);
+      if ($1 === 1) {
+        return text("1 remaining guess");
+      } else {
+        let n = $1;
+        return text($int.to_string(n) + " remaining guesses");
+      }
+    } else {
+      throw makeError(
+        "case_no_match",
+        "app",
+        119,
         "view",
         "No case clause matched",
         { values: [$] }
@@ -430,7 +447,7 @@ function view(model) {
   })();
   return stack(
     toList([id("game"), $stack.space("3em")]),
-    toList([elements(), theme($ui.base()), message, main_content, controls]),
+    toList([elements(), theme($ui.base()), main_content, message, controls]),
   );
 }
 

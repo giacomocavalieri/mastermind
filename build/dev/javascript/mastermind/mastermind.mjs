@@ -77,7 +77,7 @@ export function random_game() {
     new Blue(),
     toList([new Green(), new Orange(), new Purple(), new Red(), new Yellow()]),
   );
-  let secret_code = $random.map4(
+  let secret_code$1 = $random.map4(
     peg,
     peg,
     peg,
@@ -86,7 +86,7 @@ export function random_game() {
       return new SecretCode(var0, var1, var2, var3);
     },
   );
-  return new_game($random.random_sample(secret_code));
+  return new_game($random.random_sample(secret_code$1));
 }
 
 export function attempted_guesses(game) {
@@ -99,6 +99,10 @@ export function are_guesses_over(game) {
 
 export function remaining_guesses(game) {
   return game.max_attempts - attempted_guesses(game);
+}
+
+export function secret_code(game) {
+  return game.secret_code;
 }
 
 function pairs(secret_code, guess) {
