@@ -75,7 +75,7 @@ pub fn new_game(secret_code: SecretCode) -> Game {
 pub fn random_game() -> Game {
   let peg = random.uniform(Blue, [Green, Orange, Purple, Red, Yellow])
   let secret_code = random.map4(peg, peg, peg, peg, SecretCode)
-  new_game(random.sample(secret_code))
+  new_game(random.random_sample(secret_code))
 }
 
 // QUERYING A GAME -------------------------------------------------------------
