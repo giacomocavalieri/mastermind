@@ -54,6 +54,8 @@ fn init_pegs() -> Ring(Option(Peg)) {
 pub type Message {
   NewGame
   SetFocusedPeg(Peg)
+  FocusNextPeg
+  FocusPreviousPeg
   MakeAGuess
 }
 
@@ -67,6 +69,9 @@ fn update(model: Model, message: Message) -> Model {
         |> ring.focus_next
       Model(..model, pegs: new_pegs)
     }
+
+    FocusPreviousPeg -> Model(..model, pegs: ring.focus_previous(model.pegs))
+    FocusNextPeg -> Model(..model, pegs: ring.focus_next(model.pegs))
 
     MakeAGuess ->
       case guess_from_model_pegs(model) {
@@ -96,7 +101,9 @@ fn guess_from_model_pegs(model: Model) -> Option(Guess) {
 
 pub fn key_to_event(value: String) -> Result(Message, List(DecodeError)) {
   case value {
-    "\r" | "\n" -> Ok(MakeAGuess)
+    "Enter" -> Ok(MakeAGuess)
+    "ArrowLeft" -> Ok(FocusPreviousPeg)
+    "ArrowRight" -> Ok(FocusNextPeg)
     _ -> result.map(mastermind.parse_peg(value), SetFocusedPeg)
   }
 }

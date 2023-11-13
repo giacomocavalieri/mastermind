@@ -35,6 +35,26 @@ pub fn focus_next(ring: Ring(a)) -> Ring(a) {
   }
 }
 
+pub fn focus_previous(ring: Ring(a)) -> Ring(a) {
+  let Ring(left, focused, right) = ring
+  case queue.pop_back(left) {
+    Ok(#(new_focused, rest_left)) ->
+      // The ring still has items to the left of the focused one, so we move
+      // focus to the previous item to the left of the current one
+      Ring(rest_left, new_focused, queue.push_front(right, focused))
+    Error(_) ->
+      case queue.pop_back(right) {
+        Error(_) ->
+          // The ring only has one item, so the focus stays on the current one
+          Ring(left, focused, right)
+        Ok(#(new_focused, rest_right)) ->
+          // The focused item is the first one, so we move focus all the way
+          // down to the last item (the rightmost one)
+          Ring(queue.push_front(rest_right, focused), new_focused, queue.new())
+      }
+  }
+}
+
 pub fn focused_item(ring: Ring(a)) -> a {
   ring.focused
 }
