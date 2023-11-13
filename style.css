@@ -20,10 +20,6 @@ button:disabled:hover {
     cursor: pointer;
 }
 
-.chosen-peg:hover {
-    cursor: pointer;
-}
-
 .correct-color,
 .correct-position {
     display: flex;
@@ -57,40 +53,71 @@ button:disabled:hover {
 .peg-red {
     background-color: lightcoral;
 
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px lightcoral;
+        color: lightcoral;
+    }
+
 }
 
 .peg-yellow {
     background-color: lightgoldenrodyellow;
+
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px black;
+        color: black;
+    }
 
 }
 
 .peg-green {
     background-color: lightgreen;
 
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px lightgreen;
+        color: lightgreen;
+    }
 }
 
 .peg-blue {
     background-color: lightskyblue;
+
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px lightskyblue;
+        color: lightskyblue;
+    }
 
 }
 
 .peg-orange {
     background-color: orange;
 
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px orange;
+        color: orange;
+    }
 }
 
 .peg-purple {
     background-color: plum;
 
+    &.focused-peg {
+        background-color: transparent;
+        border: solid 1px plum;
+        color: plum;
+    }
 }
 
 .peg-empty {
     border: dashed 1px black;
-}
 
-.focused-peg {
-    border: solid 1px red;
-    color: red;
-    background: transparent;
-    box-shadow: inset;
+    &.focused-peg {
+        border-color: red;
+        color: red;
+    }
 }

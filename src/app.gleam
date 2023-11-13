@@ -1,4 +1,3 @@
-import gleam/bool
 import gleam/dynamic.{type DecodeError}
 import gleam/int
 import gleam/list
@@ -19,6 +18,7 @@ import mastermind.{
   CorrectColor, CorrectPosition, Green, Guess, Lose, NoMoreGuesses, Orange,
   Purple, Red, Win, Yellow,
 }
+import ring.{type Focus, type Ring, Focused}
 
 // APPLICATION ENTRY POINT -----------------------------------------------------
 
@@ -34,32 +34,25 @@ pub fn main() {
 /// current colors chosen for each peg.
 /// 
 type Model {
-  Model(pegs: List(#(Option(Peg), Focus)), status: GuessOutcome, game: Game)
-}
-
-type Focus {
-  Focused
-  NotFocused
+  Model(pegs: Ring(Option(Peg)), status: GuessOutcome, game: Game)
 }
 
 fn init(_: Nil) -> Model {
   Model(
-    pegs: [
-      #(None, Focused),
-      #(None, NotFocused),
-      #(None, NotFocused),
-      #(None, NotFocused),
-    ],
+    pegs: ring.new(None, [None, None, None]),
     status: Continue,
     game: mastermind.random_game(),
   )
+}
+
+fn init_pegs() -> Ring(Option(Peg)) {
+  ring.new(None, [None, None, None])
 }
 
 // UPDATE ----------------------------------------------------------------------
 
 pub type Message {
   NewGame
-  FocusPeg(Int)
   SetFocusedPeg(Peg)
   MakeAGuess
 }
@@ -68,18 +61,12 @@ fn update(model: Model, message: Message) -> Model {
   case message {
     NewGame -> init(Nil)
 
-    SetFocusedPeg(peg_value) ->
-      case focused_peg_position(model) {
-        None -> model
-        Some(peg_position) ->
-          set_peg(model, peg_position, peg_value)
-          |> unfocus_pegs
-          |> focus_first_empty_peg
-      }
-
-    FocusPeg(peg_position) ->
-      unfocus_pegs(model)
-      |> focus_peg(peg_position)
+    SetFocusedPeg(peg_value) -> {
+      let new_pegs =
+        ring.replace_focused(model.pegs, Some(peg_value))
+        |> ring.focus_next
+      Model(..model, pegs: new_pegs)
+    }
 
     MakeAGuess ->
       case guess_from_model_pegs(model) {
@@ -88,78 +75,9 @@ fn update(model: Model, message: Message) -> Model {
           case mastermind.make_guess(model.game, guess) {
             Error(NoMoreGuesses) -> model
             Ok(#(outcome, new_game)) ->
-              Model(..model, status: outcome, game: new_game)
-              |> reset_pegs
-              |> focus_first_empty_peg
+              Model(status: outcome, game: new_game, pegs: init_pegs())
           }
       }
-  }
-}
-
-/// Sets the value of a peg in a given position.
-/// 
-fn set_peg(model: Model, position: Int, value: Peg) -> Model {
-  let new_pegs = {
-    use index, peg <- list.index_map(model.pegs)
-    use <- bool.guard(when: index != position, return: peg)
-    #(Some(value), peg.1)
-  }
-  Model(..model, pegs: new_pegs)
-}
-
-/// Focuses the first non-focused empty peg, if all pegs are already full
-/// no peg is focused.
-/// 
-fn focus_first_empty_peg(model: Model) -> Model {
-  Model(..model, pegs: do_focus_first_unfocused(model.pegs, []))
-}
-
-fn do_focus_first_unfocused(
-  values: List(#(Option(a), Focus)),
-  acc: List(#(Option(a), Focus)),
-) {
-  case values {
-    [] -> list.reverse(acc)
-    [#(Some(_), _) as value, ..rest] | [#(_, Focused) as value, ..rest] ->
-      do_focus_first_unfocused(rest, [value, ..acc])
-    [#(None, NotFocused), ..rest] ->
-      list.reverse(acc)
-      |> list.append([#(None, Focused)])
-      |> list.append(rest)
-  }
-}
-
-/// Focuses a peg in a given position.
-/// 
-fn focus_peg(model: Model, position: Int) -> Model {
-  let new_pegs = {
-    use index, peg <- list.index_map(model.pegs)
-    use <- bool.guard(when: index != position, return: peg)
-    #(peg.0, Focused)
-  }
-  Model(..model, pegs: new_pegs)
-}
-
-/// Resets all pegs to their initial state: unfocused and with no value.
-/// 
-fn reset_pegs(model: Model) -> Model {
-  Model(..model, pegs: list.repeat(#(None, NotFocused), 4))
-}
-
-/// Removes the focus from all_pegs.
-/// 
-fn unfocus_pegs(model: Model) -> Model {
-  Model(..model, pegs: list.map(model.pegs, fn(peg) { #(peg.0, NotFocused) }))
-}
-
-/// Returns true if any of the pegs is in a focused status.
-/// 
-fn focused_peg_position(model: Model) -> Option(Int) {
-  use res, #(_, focus), index <- list.index_fold(over: model.pegs, from: None)
-  use <- option.lazy_or(res)
-  case focus {
-    Focused -> Some(index)
-    NotFocused -> None
   }
 }
 
@@ -167,8 +85,8 @@ fn focused_peg_position(model: Model) -> Option(Int) {
 /// Otherwise returns `Nothing`, since a guess must be made of 4 pegs.
 /// 
 fn guess_from_model_pegs(model: Model) -> Option(Guess) {
-  case model.pegs {
-    [#(Some(peg1), _), #(Some(peg2), _), #(Some(peg3), _), #(Some(peg4), _)] ->
+  case ring.to_list(model.pegs) {
+    [Some(peg1), Some(peg2), Some(peg3), Some(peg4)] ->
       Some(Guess(peg1, peg2, peg3, peg4))
     _ -> None
   }
@@ -269,23 +187,21 @@ fn guess_hint(hint: Hint) -> Element(nothing) {
 
 fn picker(model: Model) -> Element(Message) {
   let guess_row =
-    list.index_map(model.pegs, chosen_peg)
+    list.map(ring.to_focus_list(model.pegs), chosen_peg)
     |> cluster([], _)
 
-  let content = case focused_peg_position(model) {
-    None -> [guess_row]
-    Some(_) -> [
+  stack(
+    [id("picker")],
+    [
       guess_row,
       [Red, Yellow, Green, Blue, Orange, Purple]
       |> list.map(choice_peg)
       |> cluster([], _),
-    ]
-  }
-
-  stack([id("picker")], content)
+    ],
+  )
 }
 
-fn chosen_peg(position: Int, peg: #(Option(Peg), Focus)) -> Element(Message) {
+fn chosen_peg(peg: #(Option(Peg), Focus)) -> Element(Message) {
   let #(peg_value, peg_focus) = peg
   span(
     [
@@ -293,7 +209,6 @@ fn chosen_peg(position: Int, peg: #(Option(Peg), Focus)) -> Element(Message) {
       class("chosen-peg"),
       class(peg_to_color_class(peg_value)),
       classes([#("focused-peg", peg_focus == Focused)]),
-      on_click(FocusPeg(position)),
     ],
     [text(peg_to_letter(peg_value))],
   )
