@@ -1,6 +1,7 @@
 import gleam/bool.{guard}
 import gleam/dynamic.{type DecodeError, DecodeError}
 import gleam/list
+import gleam/order.{type Order, Eq, Gt, Lt}
 import gleam/string
 import prng/random
 import tote/bag
@@ -147,7 +148,6 @@ fn compare(guess: Guess, with secret_code: SecretCode) -> List(Hint) {
     list.repeat(CorrectColor, correct_colors),
   ]
   |> list.concat
-  |> list.shuffle
 }
 
 /// Given the secret code and a guess, returns the number of pegs
