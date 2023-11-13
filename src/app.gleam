@@ -1,7 +1,6 @@
 import gleam/bool
 import gleam/int
 import gleam/list
-import gleam/io
 import gleam/option.{type Option, None, Some}
 import lustre
 import lustre/attribute.{class, classes, disabled, id}
@@ -60,7 +59,7 @@ type Message {
   NewGame
   FocusPeg(Int)
   SetPeg(Int, Peg)
-  TryGuess(Guess)
+  MakeAGuess
 }
 
 fn update(model: Model, message: Message) -> Model {
@@ -76,14 +75,17 @@ fn update(model: Model, message: Message) -> Model {
       unfocus_pegs(model)
       |> focus_peg(peg_position)
 
-    TryGuess(guess) ->
-      case mastermind.make_guess(model.game, guess) {
-        Error(NoMoreGuesses) -> model
-        Ok(#(outcome, new_game)) ->
-          Model(..model, status: outcome, game: new_game)
-          |> reset_pegs
-          |> focus_first_empty_peg
-          |> io.debug
+    MakeAGuess ->
+      case guess_from_model_pegs(model) {
+        None -> model
+        Some(guess) ->
+          case mastermind.make_guess(model.game, guess) {
+            Error(NoMoreGuesses) -> model
+            Ok(#(outcome, new_game)) ->
+              Model(..model, status: outcome, game: new_game)
+              |> reset_pegs
+              |> focus_first_empty_peg
+          }
       }
   }
 }
@@ -206,13 +208,9 @@ fn new_game_button(model: Model) -> Element(Message) {
 }
 
 fn make_a_guess_button(model: Model) -> Element(Message) {
-  let attributes = case model.status, guess_from_model_pegs(model) {
-    Continue, Some(guess) -> [
-      disabled(False),
-      button.solid(),
-      on_click(TryGuess(guess)),
-    ]
-    _, _ -> [disabled(True)]
+  let attributes = case model.status {
+    Continue -> [disabled(False), button.solid(), on_click(MakeAGuess)]
+    Lose | Win -> [disabled(True)]
   }
   button(attributes, [text("Make a guess")])
 }
