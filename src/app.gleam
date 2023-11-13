@@ -58,7 +58,7 @@ fn init(_: Nil) -> Model {
 type Message {
   NewGame
   FocusPeg(Int)
-  SetPeg(Int, Peg)
+  SetFocusedPeg(Peg)
   MakeAGuess
 }
 
@@ -66,10 +66,14 @@ fn update(model: Model, message: Message) -> Model {
   case message {
     NewGame -> init(Nil)
 
-    SetPeg(peg_position, peg_value) ->
-      set_peg(model, peg_position, peg_value)
-      |> unfocus_pegs
-      |> focus_first_empty_peg
+    SetFocusedPeg(peg_value) ->
+      case focused_peg_position(model) {
+        None -> model
+        Some(peg_position) ->
+          set_peg(model, peg_position, peg_value)
+          |> unfocus_pegs
+          |> focus_first_empty_peg
+      }
 
     FocusPeg(peg_position) ->
       unfocus_pegs(model)
@@ -259,10 +263,10 @@ fn picker(model: Model) -> Element(Message) {
 
   let content = case focused_peg_position(model) {
     None -> [guess_row]
-    Some(position) -> [
+    Some(_) -> [
       guess_row,
       [Red, Yellow, Green, Blue, Orange, Purple]
-      |> list.map(choice_peg(_, position))
+      |> list.map(choice_peg)
       |> cluster([], _),
     ]
   }
@@ -284,13 +288,13 @@ fn chosen_peg(position: Int, peg: #(Option(Peg), Focus)) -> Element(Message) {
   )
 }
 
-fn choice_peg(peg: Peg, position: Int) {
+fn choice_peg(peg: Peg) {
   span(
     [
       class("peg"),
       class("choice-peg"),
       class(peg_to_color_class(Some(peg))),
-      on_click(SetPeg(position, peg)),
+      on_click(SetFocusedPeg(peg)),
     ],
     [text(peg_to_letter(Some(peg)))],
   )
